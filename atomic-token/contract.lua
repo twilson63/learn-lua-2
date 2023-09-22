@@ -14,8 +14,9 @@ function contract.handle(state, action, SmartWeave)
 
   local fn = action.input['function']
 
-  if fn == "message" then
-
+  if fn == "handleMessage" then
+    action = handleMessage(action)
+    fn = action.input["function"]
   end
   
   if fn == "balance" then
@@ -35,6 +36,14 @@ function contract.handle(state, action, SmartWeave)
 end
 
 return contract
+
+function handleMessage(action)
+  local message = action.input.message 
+  return {
+    caller = message.caller,
+    input = message.input
+  }
+end
 
 function transfer(state, action) 
   if state.balances[action.caller] == nil then
