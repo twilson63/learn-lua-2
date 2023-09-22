@@ -24,7 +24,7 @@ function contract.handle(state, action, SmartWeave)
   end
   
   if fn == "transfer" then
-    return transfer(state, action)
+    return transfer(state, action, SmartWeave.contract.id, SmartWeave.transaction.id)
   end
 
 
@@ -45,7 +45,7 @@ function handleMessage(action)
   }
 end
 
-function transfer(state, action) 
+function transfer(state, action, contractId, transactionId) 
   if state.balances[action.caller] == nil then
     return {
       result = {
@@ -65,9 +65,25 @@ function transfer(state, action)
 
   state.balances[action.caller] = state.balances[action.caller] + action.input.qty 
   state.balances[action.input.target] = state.balances[action.input.target] + action.input.qty
-
+  local message = {
+    txId = transactionId,
+    target = action.input.target,
+    message = {
+      caller = contractId,
+      input = {
+        'function' = 'notify',
+        method = 'transfer',
+        from = action.caller,
+        to = action.input.target,
+        qty = action.input.qty
+      }
+    }
+  }
   return { 
-    state = state
+    state = state,
+    result = {
+      messages = { message }
+    }
   }
 end
 
